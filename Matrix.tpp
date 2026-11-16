@@ -359,12 +359,24 @@ Matrix<T> Matrix<T>::orthogonal_base(bool normalize) const{
 template<typename T>
 T Matrix<T>::determinant() const{
     if(numRows()!=numCols()) throw std::invalid_argument("Matrix must be square");
+    // Gaussian elimination to upper triangular form. The determinant is the product of the
+    // pivots, with one sign change per row swap (gauss_elimination() doesn't report its swaps).
     size_t n(numRows());
-    T det(myZero());
-    Matrix<T> G(gauss_elimination());
-    for(size_t i(0); i<n; ++i){
-        if(i==0) det=G.matrix[i][i];
-        else det = det*G.matrix[i][i];
+    std::vector<std::vector<T>> a(matrix);
+    T det(myUnit());
+    for(size_t j(0); j<n; ++j){
+        size_t p(j);
+        while(p<n and isZero(a[p][j])) ++p;
+        if(p==n) return myZero(); // no pivot in this column: singular
+        if(p!=j){
+            std::swap(a[p], a[j]);
+            det = -det;
+        }
+        det = det*a[j][j];
+        for(size_t k(j+1); k<n; ++k){
+            T factor(a[k][j]*myInverse(a[j][j]));
+            for(size_t c(j); c<n; ++c) a[k][c] = a[k][c] - factor*a[j][c];
+        }
     }
     return det;
 }

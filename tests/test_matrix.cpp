@@ -79,6 +79,9 @@ static void test_inverse_and_determinant() {
     check(std::abs(M({{2, 1}, {1, 3}}).determinant() - C(5)) < 1e-9, "determinant of a 2x2");
     check(std::abs(M({{1, 2, 3}, {0, 1, 4}, {5, 6, 0}}).determinant() - C(1)) < 1e-9, "determinant of a 3x3");
     check(std::abs(singular3().determinant()) < 1e-9, "determinant of a singular matrix is 0");
+    check(std::abs(M({{0, 1}, {1, 0}}).determinant() - C(-1)) < 1e-9, "determinant with a row swap");
+    check(std::abs(M({{0, 2, 0}, {0, 0, 3}, {C(0, 1), 0, 0}}).determinant() - C(0, 6)) < 1e-9, "determinant with two row swaps");
+    check(std::abs(square3().determinant() - C(18, 11)) < 1e-9, "determinant of a complex 3x3");
 }
 
 static void test_kernel_and_image() {
