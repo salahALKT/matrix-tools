@@ -31,3 +31,7 @@
 *.exe
 *.out
 *.app
+# Build output
+demo
+tests/test_matrix
+myprogram

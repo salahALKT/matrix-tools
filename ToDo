@@ -1,8 +1,0 @@
--Looks into namespaces for my overloads.h.
--Add A gram-schmidt function for orthonormalisation.
--Add gauss (to use in Gram-Schmidt).
--Overload [].
--Look into parallele computing for performance?
--Hessenberg + QR for eigenvalues
--Reserve memory before push_back
--Optimize setter functions

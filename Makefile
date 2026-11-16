@@ -1,21 +1,20 @@
-CC = g++
-CFLAGS = -std=c++11 -Wall -g
+CXX      = g++
+CXXFLAGS = -std=c++17 -Wall -Wextra -O2
 
-TARGET = myprogram
-SRCS = main.cpp overloads.cpp
-OBJS = $(SRCS:.cpp=.o)
-DEPS = Matrix.h Matrix.tpp
+DEPS = Matrix.h Matrix.tpp overloads.h
 
-.PHONY: all clean
+.PHONY: all test clean
 
-all: $(TARGET)
+all: demo
 
-$(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -o $(TARGET)
+demo: main.cpp overloads.cpp $(DEPS)
+	$(CXX) $(CXXFLAGS) main.cpp overloads.cpp -o $@
 
-%.o: %.cpp $(DEPS)
-	$(CC) $(CFLAGS) -c $< -o $@
+tests/test_matrix: tests/test_matrix.cpp overloads.cpp $(DEPS)
+	$(CXX) $(CXXFLAGS) tests/test_matrix.cpp overloads.cpp -o $@
+
+test: tests/test_matrix
+	./tests/test_matrix
 
 clean:
-	rm -f $(OBJS) $(TARGET)
-
+	rm -f demo tests/test_matrix *.o

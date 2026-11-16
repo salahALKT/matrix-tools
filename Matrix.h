@@ -7,6 +7,8 @@
 #include <numeric>
 #include <algorithm>
 
+#include "overloads.h" // myZero, myUnit, myInverse, ... used by the template below
+
 template<typename T>
 class Matrix{ //We will call the matrix of the current instance M
 private:

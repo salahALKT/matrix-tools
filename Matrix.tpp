@@ -352,7 +352,7 @@ Matrix<T> Matrix<T>::gram_schmidt(bool normalize) const{
 
 template<typename T>
 Matrix<T> Matrix<T>::orthogonal_base(bool normalize) const{
-    Matrix<T> result(this->transpose().gauss_elimination(true).transpose().gram_schmidt(true));
+    Matrix<T> result(this->transpose().gauss_elimination(true).transpose().gram_schmidt(normalize));
     return result;
 }
 
@@ -375,6 +375,9 @@ Matrix<T> Matrix<T>::kernel() const{
     Matrix<T> G(gauss_elimination(false, true, &ref_points));
     if(ref_points.size()==0) return identity(numCols());
     size_t n(numCols());
+    // Kernel vectors have n entries, so give G exactly n rows: pad a wide matrix with zero rows,
+    // drop the extra rows of a tall one (after reduction they are zero, since rank <= n).
+    G.matrix.resize(n, std::vector<T>(n, myZero()));
     size_t start;
     size_t end;
     Matrix<T> K(n,n-ref_points.size(),myZero());
@@ -406,14 +409,12 @@ Matrix<T> Matrix<T>::image() const{
 
 template<typename T>
 Matrix<T> Matrix<T>::complete_base(bool orthonormal) const{
-    Matrix<T> K(transpose().kernel());
+    // The orthogonal complement of Im(M) is ker(M*), with M* the conjugate transpose.
+    Matrix<T> K((~(*this)).kernel());
     Matrix<T> result(*this);
+    if(K.matrix.empty() or K.matrix[0].empty()) return result; // M already spans the whole space
+    if(orthonormal) K = K.gram_schmidt(true); // the columns of K are independent, so this is safe
     result.addColumn(K);
-    if(not(orthonormal)) return result;
-    Matrix<T> O(result.orthogonal_base(true));
-    for(size_t i(numRows()); i<result.numRows(); ++i){
-        result.row(i, O.row(i));
-    }
     return result;
 }
 
@@ -516,36 +517,22 @@ Matrix<T> Matrix<T>::diagonal_base(std::vector<T>* spectre) const{
             map.push_back({temp});
         }
     }
-    size_t indexzero(0);
-    for(size_t i(0); i<map.size(); ++i){
-        if(not(isZero(map[i][0]))){
-            D = *this - map[i][0]*identity(numCols()); //using D as temporary
-            if(i==0){
-                result = D.kernel();
-            }
-            else{
-                result.addColumn(D.kernel());
-            }
-            if(spectre!=nullptr){
-                for(size_t j(0); j<map[i].size();  ++j){
-                    spectre->push_back(map[i][j]);
-                }
-            }
+    // Eigenvectors are collected eigenvalue by eigenvalue, with the eigenvalue 0 (if any) last,
+    // because SVD expects the non-zero eigenvalues first.
+    bool empty(true);
+    auto add_eigenspace = [&](std::vector<T> const& eigenvalues){
+        Matrix<T> K((*this - eigenvalues[0]*identity(numCols())).kernel());
+        if(empty){ result = K; empty = false; }
+        else result.addColumn(K);
+        if(spectre!=nullptr){
+            for(auto const& v : eigenvalues) spectre->push_back(v);
         }
-        else indexzero=i;
+    };
+    for(auto const& eigenvalues : map){
+        if(not isZero(eigenvalues[0])) add_eigenspace(eigenvalues);
     }
-    //We add the eigen vectors associated to zero at the end.
-    D = *this - map[indexzero][0]*identity(numCols());
-    if(indexzero==0){
-        result = D.kernel();
-    }
-    else{
-        result.addColumn(D.kernel());
-    }
-    if(spectre!=nullptr){
-        for(size_t j(0); j<map[indexzero].size();  ++j){
-            spectre->push_back(map[indexzero][j]);
-        }
+    for(auto const& eigenvalues : map){
+        if(isZero(eigenvalues[0])) add_eigenspace(eigenvalues);
     }
     return result;
 }
