@@ -1,6 +1,6 @@
-# Matrices-tools
+# matrix-tools
 
-[![tests](https://github.com/salahALKT/Matrices-tools/actions/workflows/ci.yml/badge.svg)](https://github.com/salahALKT/Matrices-tools/actions/workflows/ci.yml)
+[![tests](https://github.com/salahALKT/matrix-tools/actions/workflows/ci.yml/badge.svg)](https://github.com/salahALKT/matrix-tools/actions/workflows/ci.yml)
 
 A C++ matrix library written from scratch, with no dependencies: it uses only the standard library. The
 `Matrix<T>` template lives in `Matrix.h` / `Matrix.tpp`; compile `overloads.cpp` alongside your code.
